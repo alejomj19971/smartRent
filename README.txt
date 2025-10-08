@@ -12,7 +12,7 @@ Instrucciones:
 
 6) uvicorn main:app --reload
 
-7)http://127.0.0.1:8000 
+7)http://127.0.0.1:8000  estan todos los endpoints  http://127.0.0.1:8000/docs 
 
 8) Se puede ver los datos cargados en la base de datos después de hacer scrapping a una pagina de arriendos.
 
