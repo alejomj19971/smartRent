@@ -1,5 +1,5 @@
-from database import SessionLocal
-from models import Casas
+from src.database import SessionLocal
+from src.models import Casas
 
 def guardar_casas(df):
     db = SessionLocal()
