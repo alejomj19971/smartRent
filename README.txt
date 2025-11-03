@@ -1,6 +1,8 @@
-Descripción
+SmartRent es una aplicación web diseñada para facilitar la gestión y reserva de propiedades en arriendo de manera rápida, segura y completamente digital.
+El proyecto busca ofrecer una solución moderna tanto para propietarios como para arrendatarios, optimizando el proceso de alquiler mediante una interfaz intuitiva y un sistema automatizado de reservas.
 
-Este proyecto recopila información de algunas plataformas de arriendo del Valle de Aburra  con el fin de  alimentar y entrenar un modelo de LLM o de clasificación para ayudar a las personas  a optimizar el tiempo de busqueda de la propiedad ideal según sus condiciones.
+En su primera versión (MVP – Mínimo Producto Viable), el objetivo es validar la funcionalidad principal del sistema: permitir que los usuarios se registren, consulten propiedades disponibles y realicen una reserva simulada.
+Este MVP servirá como base para integrar más adelante módulos adicionales, como pagos en línea, calificaciones de usuarios y gestión avanzada de contratos.
 
 
 Diseño : 
