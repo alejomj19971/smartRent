@@ -1,6 +1,6 @@
 from typing import Annotated
 from sqlalchemy.orm import Session
-from fastapi import FastAPI,Depends
+from fastapi import FastAPI, Depends
 from src.database import engine,SessionLocal
 import src.models
 from src.models import Casas
@@ -21,7 +21,7 @@ def get_db():
 
 db_dependency=Annotated[Session, Depends(get_db)]
 
-@app.get("/")
+@app.get("/casas")
 async def read_all(db:db_dependency):
     return db.query(Casas).all()
 
