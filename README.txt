@@ -7,11 +7,14 @@ Este MVP servirá como base para integrar más adelante módulos adicionales, co
 
 Diseño : 
 
-1.Realizar Web Scrapping con BeautifulSoup de plataformas de arriendos.
+1.Realizar Web Scrapping con BeautifulSoup de plataformas de arriendos en Copacabana y medellín.
 
-2.Alimentar una base de datos postgreSQL o MongoDB según lo homogeneidad de los datos.
+2.Alimentar una base de datos sqlite3.
 
-3.Entrenar un modelo con Pytorch y Tranformers u otras tecnologías.
+3.Utilizar langchain para conectar con modelos locales  y consumir las consultas 
+a la base de datos generados.
+
+3.1Conexión con modelo de análisis de contexto o NPL como GPT 4
 
 4.Crear una interfaz sencilla con js y react.
 
@@ -30,7 +33,7 @@ Lenguaje: Python
 
 Framework Backend: FastAPI
 
-Base de datos: SQLite
+Base de datos: SQLite3
 
 ORM: SQLAlchemy
 
@@ -40,7 +43,10 @@ Scraping: BeautifulSoup
 
 API y conexión: Requests
 
-Modelo de lenguaje (LLM): para análisis inteligente de arriendos
+Conexión a modelos: Langchain
+
+Modelo de lenguaje (LLM): para análisis inteligente de arriendos , OpenAI es fácil de integrar y reconoce a bajo costo la base de datos entregada, no necesitamos un modelo de última versión sino uno que podamos ofrecerle suficiente contexto para que realice lo que el usuario necesita.
+
 
 
 
@@ -51,15 +57,15 @@ Instrucciones:
  
 2)git clone https://github.com/alejomj19971/smartRent.git
 
-3) cd smartRent
+3) en la terminal cd appRent.
 
-4) pip install -r requirements.txt
+4)venv\Scripts\activate en la terminal
 
-5)cd src
+5) pip install -r requirements.txt
 
 6) uvicorn main:app --reload
 
-7)http://127.0.0.1:8000  estan todos los endpoints  http://127.0.0.1:8000/docs 
+7)http://127.0.0.1:8000 encontraras el formulario y en  http://127.0.0.1:8000/docs  esta la documentación de la API
 
 8) Se puede ver los datos cargados en la base de datos después de hacer scrapping a una pagina de arriendos.
 
