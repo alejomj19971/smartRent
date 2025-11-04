@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartRent Chat - Asistente Inmobiliario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animación para el indicador de escritura */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .typing-indicator {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto max-w-4xl px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-indigo-600">🏠 SmartRent Chat</h1>
+                    <p class="text-gray-600 mt-1">Asistente inteligente para consultas sobre propiedades</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-sm text-gray-600">Conectado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Messages Area -->
+            <div id="chatMessages" class="h-96 overflow-y-auto p-6 space-y-4 bg-gray-50">
+                <!-- Mensaje de bienvenida -->
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold">AI</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-indigo-100 rounded-lg p-4">
+                            <p class="text-gray-800">
+                                ¡Hola! 👋 Soy tu asistente de SmartRent. Puedo ayudarte a buscar propiedades según tus criterios.
+                                <br><br>
+                                <strong>Ejemplos de preguntas:</strong>
+                                <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
+                                    <li>"Buscar casas que valgan menos de un millón doscientos"</li>
+                                    <li>"Cuántas casas hay disponibles?"</li>
+                                    <li>"Casas con parqueadero y más de 3 habitaciones"</li>
+                                    <li>"Lista las 5 casas más caras"</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">SmartRent AI</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-200 p-4 bg-white">
+                <form id="chatForm" class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Escribe tu pregunta sobre propiedades..."
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        autocomplete="off"
+                    >
+                    <button 
+                        type="submit"
+                        id="sendButton"
+                        class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Enviar
+                    </button>
+                </form>
+                <p class="text-xs text-gray-500 mt-2 text-center">
+                    Presiona Enter para enviar • Usa "salir" o "exit" para terminar
+                </p>
+            </div>
+        </div>
+
+        <!-- Ejemplos rápidos -->
+        <div class="mt-6">
+            <p class="text-sm text-gray-600 mb-2">Preguntas rápidas:</p>
+            <div class="flex flex-wrap gap-2">
+                <button 
+                    onclick="sendQuickMessage('Cuántas casas hay disponibles?')"
+                    class="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm"
+                >
+                    Casas disponibles
+                </button>
+                <button 
+                    onclick="sendQuickMessage('Casas con parqueadero')"
+                    class="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm"
+                >
+                    Con parqueadero
+                </button>
+                <button 
+                    onclick="sendQuickMessage('Casas menores a 2 millones')"
+                    class="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm"
+                >
+                    Menos de $2M
+                </button>
+                <button 
+                    onclick="sendQuickMessage('Lista las 5 casas más caras')"
+                    class="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm"
+                >
+                    Top 5 más caras
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // Función para agregar mensaje al chat
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'flex-shrink-0';
+            
+            const avatar = document.createElement('div');
+            avatar.className = isUser 
+                ? 'w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center'
+                : 'w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center';
+            avatar.innerHTML = isUser ? '<span class="text-white text-sm font-bold">Yo</span>' : '<span class="text-white text-sm font-bold">AI</span>';
+            avatarDiv.appendChild(avatar);
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = `flex-1 ${isUser ? 'text-right' : ''}`;
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.className = isUser 
+                ? 'bg-indigo-600 text-white rounded-lg p-4 inline-block max-w-md'
+                : 'bg-indigo-100 rounded-lg p-4 inline-block max-w-md';
+            messageBubble.innerHTML = `<p class="whitespace-pre-wrap">${text}</p>`;
+            
+            messageContent.appendChild(messageBubble);
+            
+            const timestamp = document.createElement('p');
+            timestamp.className = `text-xs text-gray-500 mt-1 ${isUser ? 'text-right' : ''}`;
+            timestamp.textContent = isUser ? 'Tú' : 'SmartRent AI';
+            messageContent.appendChild(timestamp);
+            
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(messageContent);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Función para mostrar indicador de escritura
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'flex items-start space-x-3';
+            typingDiv.innerHTML = `
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <span class="text-white text-sm font-bold">AI</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="bg-indigo-100 rounded-lg p-4 inline-block">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Función para remover indicador de escritura
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Función para enviar mensaje
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+
+            // Agregar mensaje del usuario
+            addMessage(message, true);
+            messageInput.value = '';
+
+            // Deshabilitar botón mientras se procesa
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+
+            // Mostrar indicador de escritura
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // Remover indicador de escritura
+                removeTypingIndicator();
+
+                // Agregar respuesta del asistente
+                if (data.response) {
+                    addMessage(data.response, false);
+                } else {
+                    addMessage('Lo siento, hubo un error al procesar tu mensaje.', false);
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('Error de conexión. Por favor, verifica que el servidor esté ejecutándose.', false);
+                console.error('Error:', error);
+            } finally {
+                // Rehabilitar botón
+                sendButton.disabled = false;
+                messageInput.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Función para enviar mensaje rápido
+        function sendQuickMessage(message) {
+            messageInput.value = message;
+            sendMessage(message);
+        }
+
+        // Manejar envío del formulario
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message.toLowerCase() === 'salir' || message.toLowerCase() === 'exit') {
+                addMessage('👋 ¡Hasta luego!', false);
+                return;
+            }
+            sendMessage(message);
+        });
+
+        // Auto-focus en el input
+        messageInput.focus();
+    </script>
+</body>
+</html>
+
