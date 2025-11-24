@@ -40,6 +40,8 @@ venv.bak/
 *.sqlite
 *.sqlite3
 rents.db
+# Mantener estructura pero no datos
+!rents.db.example
 
 # Archivos de IDE
 .vscode/
@@ -60,3 +62,12 @@ htmlcov/
 # Archivos del sistema operativo
 Thumbs.db
 desktop.ini
+
+# Node modules (frontend)
+front/node_modules/
+front/dist/
+front/.vite/
+
+# Archivos de build
+front/build/
+front/.next/

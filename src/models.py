@@ -11,6 +11,8 @@ class Casas(Base):
     squareMeters= Column(Integer)
     parking= Column(Integer)
     active=Column(Boolean,default=False)
+    image= Column(String)
+    municipio= Column(String)  # Campo para identificar el municipio de la propiedad
 
 
 

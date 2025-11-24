@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+"""
+Servicio de chat simplificado: SOLO obtiene contexto del LLM y ejecuta consultas SQL.
+Todo el procesamiento post-consulta se hace fuera de este módulo.
+"""
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Cargar variables de entorno desde .env
+# Cargar variables de entorno
 project_root = Path(__file__).resolve().parent.parent
 env_path = project_root / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -13,24 +17,19 @@ from langchain_community.agent_toolkits import create_sql_agent
 from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 
-# Variable global para el agente
-_agent_executor = None
-
-def get_agent():
-    """Inicializa y retorna el agente de chat SQL"""
-    global _agent_executor
-    
-    if _agent_executor is not None:
-        return _agent_executor
-    
+def create_agent():
+    """
+    Crea un NUEVO agente SIN memoria para cada consulta.
+    Esto evita que LangChain acumule historial de conversación.
+    """
     # Obtener la ruta de la base de datos
     db_path = project_root / "rents.db"
     db_uri = f"sqlite:///{db_path.absolute()}"
     
-    # Conectar con la base de datos
+    # Conectar con la base de datos - MUY limitado para reducir tokens
     db = SQLDatabase.from_uri(
         db_uri,
-        sample_rows_in_table_info=3,
+        sample_rows_in_table_info=0,  # NO enviar filas de ejemplo (reduce tokens)
         include_tables=['casas']
     )
     
@@ -43,60 +42,55 @@ def get_agent():
     
     llm = ChatOpenAI(
         model='gpt-4o-mini',
-        temperature=0
+        temperature=0,
+        max_tokens=500  # Limitar tokens de respuesta
     )
     
     # Crear toolkit SQL
     toolkit = SQLDatabaseToolkit(db=db, llm=llm)
     
-    # Prompt personalizado para el agente
-    custom_prompt = """Eres un asistente experto en consultas sobre propiedades inmobiliarias.
-Cuando el usuario pregunte sobre casas con precios específicos:
-1. Primero responde con la CANTIDAD de casas encontradas
-2. Luego lista TODAS las casas con sus detalles (título, precio, habitaciones, baños, parqueaderos, metros cuadrados)
+    # Prompt con ejemplos cortos de consultas SQL
+    custom_prompt = """SQL para propiedades. Tabla: casas(id,title,price,toilet,bedroom,squareMeters,parking,image,municipio). SIEMPRE LIMIT 25.
 
-FORMATO DE RESPUESTA ESPERADO:
-"Encontré X casas con precio menor a [precio]. Son las siguientes:
-1. [título] - Precio: $[precio] - [X] habitaciones - [X] baños - [X] parqueaderos - [X] m²
-2. [título] - Precio: $[precio] - [X] habitaciones - [X] baños - [X] parqueaderos - [X] m²
-..."
+Ejemplos sin municipio:
+- "2 cuartos, 2 baños, parqueadero" = SELECT * FROM casas WHERE bedroom=2 AND toilet=2 AND parking>0 LIMIT 25;
+- "1 millón, 1 baño, 1 cuarto" = SELECT * FROM casas WHERE price<=1000000 AND toilet=1 AND bedroom=1 LIMIT 25;
+- "menos de 35 m², parqueadero" = SELECT * FROM casas WHERE squareMeters<35 AND parking>0 LIMIT 25;
+- "3 cuartos, más de 70 m²" = SELECT * FROM casas WHERE bedroom=3 AND squareMeters>70 LIMIT 25;
+- "900 mil, mínimo 50 m², parqueadero" = SELECT * FROM casas WHERE price<=900000 AND squareMeters>=50 AND parking>0 LIMIT 25;
+- "baratas, 1 cuarto, 1 baño" = SELECT * FROM casas WHERE bedroom=1 AND toilet=1 ORDER BY price ASC LIMIT 25;
+- "mínimo 60 m², 2 cuartos" = SELECT * FROM casas WHERE squareMeters>=60 AND bedroom=2 LIMIT 25;
+- "2 baños, parqueadero, menos de 1 millón" = SELECT * FROM casas WHERE toilet=2 AND parking>0 AND price<1000000 LIMIT 25;
+- "3 cuartos, más de 2 baños" = SELECT * FROM casas WHERE bedroom=3 AND toilet>2 LIMIT 25;
 
-ESQUEMA DE LA BASE DE DATOS - TABLA "casas":
-- id: Integer (clave primaria)
-- title: String (título de la casa)
-- price: Integer (precio en números enteros)
-- toilet: Integer (número de baños, puede ser 0, 1, 2, 3, etc.)
-- bedroom: Integer (número de habitaciones, puede ser 0, 1, 2, 3, etc.)
-- squareMeters: Integer (metros cuadrados)
-- parking: Integer (número de parqueaderos, puede ser 0, 1, 2, etc. - 0 significa sin parqueadero)
-- active: Boolean (disponible/no disponible)
+Ejemplos con municipio (municipio en minúsculas: bello, copacabana, medellin, envigado, caldas, sabaneta, estrella):
+Casas en cada municipio (SIEMPRE usar WHERE municipio='nombre'):
+- "casas en Bello" = SELECT * FROM casas WHERE municipio='bello' LIMIT 25;
+- "casas en Copacabana" = SELECT * FROM casas WHERE municipio='copacabana' LIMIT 25;
+- "casas en Medellín" = SELECT * FROM casas WHERE municipio='medellin' LIMIT 25;
+- "casas en Envigado" = SELECT * FROM casas WHERE municipio='envigado' LIMIT 25;
+- "casas en Caldas" = SELECT * FROM casas WHERE municipio='caldas' LIMIT 25;
+- "casas en Sabaneta" = SELECT * FROM casas WHERE municipio='sabaneta' LIMIT 25;
+- "casas en La Estrella" = SELECT * FROM casas WHERE municipio='estrella' LIMIT 25;
+- "Casas en Medellín" = SELECT * FROM casas WHERE municipio='medellin' LIMIT 25;
+- "Casas en Sabaneta" = SELECT * FROM casas WHERE municipio='sabaneta' LIMIT 25;
+- "Casas en Caldas" = SELECT * FROM casas WHERE municipio='caldas' LIMIT 25;
 
-INSTRUCCIONES PARA CONSULTAS:
-- Para buscar casas CON parqueadero: parking > 0 o parking >= 1
-- Para buscar casas SIN parqueadero: parking = 0 o parking < 1
-- Para buscar casas con X parqueaderos: parking = X
-- Para buscar casas con más de X parqueaderos: parking > X
-- Para buscar casas con baños: toilet > 0 o toilet >= 1
-- Para buscar casas sin baños: toilet = 0
-- Para buscar casas con X baños: toilet = X
-- Para buscar casas con más de X baños: toilet > X
-- "un millón doscientos" puede referirse a 1,200,000 o 1,200,000,000. Si el usuario no especifica, asume que es en millones (1,200,000)
-- Si preguntan por casas "menores a" un precio, usa: price < [precio]
-- Si preguntan por casas "menores o iguales a" un precio, usa: price <= [precio]
-- Siempre muestra el precio formateado con separadores de miles (ej: $1,200,000)
-- SIEMPRE incluye en las respuestas: título, precio, habitaciones, baños, parqueaderos y metros cuadrados
+Ejemplos combinados con municipio:
+- "2 cuartos en Medellín" = SELECT * FROM casas WHERE municipio='medellin' AND bedroom=2 LIMIT 25;
+- "Copacabana, 1 millón, parqueadero" = SELECT * FROM casas WHERE municipio='copacabana' AND price<=1000000 AND parking>0 LIMIT 25;
+- "Envigado, 3 cuartos, 2 baños" = SELECT * FROM casas WHERE municipio='envigado' AND bedroom=3 AND toilet=2 LIMIT 25;
+- "Caldas, menos de 50 m²" = SELECT * FROM casas WHERE municipio='caldas' AND squareMeters<50 LIMIT 25;
+- "Sabaneta, 2 baños, parqueadero" = SELECT * FROM casas WHERE municipio='sabaneta' AND toilet=2 AND parking>0 LIMIT 25;
+- "La Estrella, 1 cuarto, 1 baño" = SELECT * FROM casas WHERE municipio='estrella' AND bedroom=1 AND toilet=1 LIMIT 25;
+- "Bello, baratas" = SELECT * FROM casas WHERE municipio='bello' ORDER BY price ASC LIMIT 25;
+- "Medellín, más de 70 m², 3 cuartos" = SELECT * FROM casas WHERE municipio='medellin' AND squareMeters>70 AND bedroom=3 LIMIT 25;
 
-EJEMPLOS DE CONSULTAS SQL CORRECTAS:
-- "Casas con parqueadero": SELECT * FROM casas WHERE parking > 0;
-- "Casas sin parqueadero": SELECT * FROM casas WHERE parking = 0;
-- "Casas con 2 baños": SELECT * FROM casas WHERE toilet = 2;
-- "Casas con más de 2 baños": SELECT * FROM casas WHERE toilet > 2;
-- "Casas con parqueadero y más de 3 habitaciones": SELECT * FROM casas WHERE parking > 0 AND bedroom > 3;
-
-Responde SIEMPRE en español y con el formato especificado arriba. INCLUYE siempre la información de baños y parqueaderos en tus respuestas."""
+Español."""
     
-    # Crear el agente
-    _agent_executor = create_sql_agent(
+    # Crear el agente SIN memoria (nuevo cada vez)
+    # No usar variable global - crear nuevo agente cada vez para evitar historial
+    agent = create_sql_agent(
         llm=llm,
         toolkit=toolkit,
         verbose=False,
@@ -105,16 +99,44 @@ Responde SIEMPRE en español y con el formato especificado arriba. INCLUYE siemp
         prefix=custom_prompt,
     )
     
-    return _agent_executor
+    return agent
 
-def chat_with_agent(query: str) -> str:
-    """Procesa una consulta del usuario y retorna la respuesta del agente"""
+def chat_with_agent(query: str, city: str = None) -> str:
+    """
+    Procesa una consulta y retorna SOLO el string de respuesta del LLM.
+    Crea un agente NUEVO cada vez (sin memoria) para evitar acumulación de tokens.
+    
+    Args:
+        query: Consulta del usuario
+        city: Ciudad opcional para filtrar (se agrega al query)
+    
+    Returns:
+        String con la respuesta del LLM
+    """
     try:
-        agent = get_agent()
-        forced_query = f"Responde en español. {query}"
-        result = agent.invoke({'input': forced_query})
+        # Si hay ciudad, agregar filtro al query
+        if city:
+            city_to_municipio = {
+                "Medellín": "medellin", "Medellin": "medellin",
+                "Copacabana": "copacabana", "Sabaneta": "sabaneta",
+                "La Estrella": "estrella", "La estrella": "estrella", "Estrella": "estrella",
+                "Envigado": "envigado", "Caldas": "caldas", "Bello": "bello"
+            }
+            municipio = city_to_municipio.get(city, city.lower().replace(" ", "_").replace("í", "i").replace("ó", "o").replace("é", "e").replace("á", "a").replace("ú", "u"))
+            query = f"Filtrar por municipio='{municipio}'. {query}"
+        
+        # Agregar LIMIT 25 explícitamente al query
+        query = f"{query} IMPORTANTE: Usa LIMIT 25 en la consulta SQL."
+        
+        # Crear agente NUEVO cada vez (sin memoria/historial)
+        agent = create_agent()
+        
+        # Ejecutar consulta y retornar solo el string
+        # Usar invoke con input limpio (sin historial)
+        result = agent.invoke({'input': query})
         output = result.get('output') if isinstance(result, dict) else str(result)
+        
         return output
+        
     except Exception as e:
-        return f"Error al procesar la consulta: {str(e)}. Por favor, intenta reformular tu pregunta."
-
+        return f"Error al procesar la consulta: {str(e)}"
