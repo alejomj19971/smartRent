@@ -60,18 +60,12 @@ cd ..
 ```
 
 ### Paso 5: Configurar Variables de Entorno
-```bash
-# Copiar archivo de ejemplo
-copy .env.example .env
 
-# Editar .env con tu editor favorito
-notepad .env
-```
-
-Agrega tu API key de OpenAI:
+Crea el archivo `.env` en la raíz del proyecto (misma carpeta donde está `requirements.txt`) y pega:
 ```
 OPENAI_API_KEY=sk-tu-api-key-aqui
 ```
+(Reemplaza `sk-tu-api-key-aqui` con tu API key real)
 
 ### Paso 6: Ejecutar la Aplicación
 

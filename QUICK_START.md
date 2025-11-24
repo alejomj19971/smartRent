@@ -8,8 +8,8 @@ git clone https://github.com/alejomj19971/smartRent.git
 cd appRent
 
 # 2. Configurar API Key
-# Crea el archivo .env en la raíz del proyecto y pega:
-# OPENAI_API_KEY=sk-tu-api-key-aqui
+# Crea el archivo .env en la raíz del proyecto (misma carpeta donde está requirements.txt)
+# Pega: OPENAI_API_KEY=sk-tu-api-key-aqui
 
 # 3. Instalar Backend
 python -m venv venv

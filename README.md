@@ -30,13 +30,12 @@ cd appRent
 ```
 
 2. **Configurar variables de entorno**
-```bash
-# Copiar el archivo de ejemplo
-cp .env.example .env
 
-# Editar .env y agregar tu API key de OpenAI
-# OPENAI_API_KEY=tu-api-key-aqui
+Crea el archivo `.env` en la raíz del proyecto (misma carpeta donde está `requirements.txt`) y pega:
 ```
+OPENAI_API_KEY=sk-tu-api-key-aqui
+```
+(Reemplaza `sk-tu-api-key-aqui` con la API key que te proporcionaron)
 
 3. **Instalar dependencias del backend**
 ```bash
@@ -120,11 +119,11 @@ appRent/
 
 ### Variables de Entorno
 
-Crea un archivo `.env` en la raíz del proyecto:
-
-```env
+Crea el archivo `.env` en la raíz del proyecto (misma carpeta donde está `requirements.txt`) y pega:
+```
 OPENAI_API_KEY=sk-tu-api-key-aqui
 ```
+(Reemplaza `sk-tu-api-key-aqui` con tu API key real)
 
 ### Base de Datos
 
