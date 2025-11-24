@@ -1,6 +1,14 @@
 # 🏠 SmartRent - Sistema de Gestión y Reserva de Propiedades
 
-SmartRent es una aplicación web diseñada para facilitar la gestión y reserva de propiedades en arriendo mediante un chat inteligente con IA.
+SmartRent es una aplicación web diseñada para facilitar la gestión y reserva de propiedades en arriendo de manera rápida, segura y completamente digital.
+
+El proyecto busca ofrecer una solución moderna tanto para propietarios como para arrendatarios, optimizando el proceso de alquiler mediante una interfaz intuitiva y un sistema automatizado de reservas.
+
+## 📋 Sobre el MVP (Mínimo Producto Viable)
+
+En su primera versión (MVP), el objetivo es validar la funcionalidad principal del sistema: permitir que los usuarios consulten propiedades disponibles mediante un chat inteligente con IA y realicen búsquedas avanzadas.
+
+Este MVP sirve como base para integrar más adelante módulos adicionales, como pagos en línea, calificaciones de usuarios y gestión avanzada de contratos.
 
 ## ✨ Características
 
