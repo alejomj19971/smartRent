@@ -21,8 +21,15 @@ cd front
 npm install
 cd ..
 
-# 5. Ejecutar
-start.bat
+# 5. Ejecutar (Abre DOS terminales en la carpeta appRent)
+
+# Terminal 1 - Backend:
+venv\Scripts\activate
+python -m uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
+
+# Terminal 2 - Frontend:
+cd front
+npm run dev
 ```
 
 ## URLs

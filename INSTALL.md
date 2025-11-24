@@ -47,25 +47,21 @@ cd ..
 
 ### 5. Ejecutar
 
-**Opción Simple (Recomendada):**
-```bash
-start.bat
-```
+**IMPORTANTE:** Abre **DOS terminales** (CMD o PowerShell) en la carpeta `appRent`
 
-**Opción Manual:**
-Abre dos terminales:
-
-**Terminal 1 (Backend):**
+**Terminal 1 - Backend:**
 ```bash
 venv\Scripts\activate
 python -m uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
 ```
+Espera a ver: `Uvicorn running on http://127.0.0.1:8000`
 
-**Terminal 2 (Frontend):**
+**Terminal 2 - Frontend:**
 ```bash
 cd front
 npm run dev
 ```
+Espera a ver: `Local: http://localhost:5173`
 
 ### ✅ Verificar
 
