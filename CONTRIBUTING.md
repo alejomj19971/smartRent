@@ -7,18 +7,12 @@
 **IMPORTANTE:** El propietario del repositorio te proporcionará la API key de OpenAI. 
 
 Una vez que la tengas:
-1. Copia `.env.example` a `.env`
-2. Edita `.env` y pega tu API key
 
-```bash
-# Windows
-copy .env.example .env
-notepad .env
-
-# Linux/Mac
-cp .env.example .env
-nano .env
+Crea el archivo `.env` en la raíz del proyecto (misma carpeta donde está `requirements.txt`) y pega:
 ```
+OPENAI_API_KEY=sk-tu-api-key-aqui
+```
+(Reemplaza `sk-tu-api-key-aqui` con tu API key real)
 
 ### 2. Instalación
 
